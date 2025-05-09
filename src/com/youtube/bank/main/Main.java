@@ -12,6 +12,7 @@ public class Main {
     static UserService userService = new UserService();
     static Main main=new Main();
     public static void main(String[] args){
+        System.out.println("WELCOME TO BANKING SYSTEM!!");
         while(true){
             System.out.println("Enter Username");
             String username= scanner.next();
