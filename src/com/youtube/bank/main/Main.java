@@ -4,6 +4,7 @@ import com.youtube.bank.entity.Transaction;
 import com.youtube.bank.entity.User;
 import com.youtube.bank.service.UserService;
 
+import java.sql.*;
 import java.util.List;
 import java.util.Scanner;
 
@@ -11,7 +12,8 @@ public class Main {
     private static Scanner scanner= new Scanner(System.in);
     static UserService userService = new UserService();
     static Main main=new Main();
-    public static void main(String[] args){
+
+    public static void main(String[] args) throws Exception {
         System.out.println("WELCOME TO BANKING SYSTEM!!");
         while(true){
             System.out.println("Enter Username");
@@ -19,7 +21,7 @@ public class Main {
             System.out.println("Enter Password");
             String password= scanner.next();
 
-            User user = userService.login(username,password);
+            User user= userService.login(username,password);
             if(user!= null && user.getRole().equals("admin")){
                 main.initAdmin();
             }else if(user!= null && user.getRole().equals("user")){
@@ -30,7 +32,7 @@ public class Main {
         }
     }
 
-    public void initAdmin(){
+    public void initAdmin() throws SQLException {
         String userId="";
         boolean flag = true;
         while(flag){
@@ -62,11 +64,11 @@ public class Main {
                     System.out.println("Account Balance for "+ userId+ ": " + balance);
                     break;
                 case 5:
-                    List<String> result = main.getUserIdForChequeBookRequests();
+                    /*List<String> result = main.getUserIdForChequeBookRequests();
                     System.out.println("Please Select User Id from below:");
                     System.out.println(result);
-                    String id = scanner.next();
-                    main.approveChequeBookRequests(id);
+                    String id = scanner.next();*/
+                    main.approveChequeBookRequests();
                     break;
                 default:
                     System.out.println("Please choose correct option!");
@@ -126,7 +128,7 @@ public class Main {
         }
     }
 
-    public void addCustomer(){
+    public void addCustomer() throws SQLException {
 
         System.out.println("Enter Username");
         String username=scanner.next();
@@ -142,7 +144,7 @@ public class Main {
         if(result){
             System.out.println("Customer account is created successfully....");
         }else{
-            System.out.println("Customer account creation failed....");
+            System.out.println("Customer account already created....");
         }
     }
 
@@ -187,8 +189,8 @@ public class Main {
         return userService.raiseChequeBookRequest(userId);
     }
 
-    private void approveChequeBookRequests(String userId){
-        userService.approveChequeBookRequests(userId);
+    private void approveChequeBookRequests(){
+        userService.approveChequeBookRequests();
     }
 
     private List<String> getUserIdForChequeBookRequests(){
