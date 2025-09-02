@@ -1,4 +1,4 @@
-package com.youtube.bank.main;
+package com.bank.main;
 
 import com.youtube.bank.entity.User;
 import com.youtube.bank.service.UserService;
