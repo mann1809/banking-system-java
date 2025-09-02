@@ -1,10 +1,9 @@
 package com.youtube.bank.service;
 
-import com.youtube.bank.entity.Transaction;
 import com.youtube.bank.entity.User;
 import com.youtube.bank.repository.UserRepository;
 
-import java.util.List;
+import java.sql.SQLException;
 
 public class UserService {
     private UserRepository userRepository= new UserRepository();
@@ -17,7 +16,7 @@ public class UserService {
         return userRepository.login(username,password);
     }
 
-    public boolean addCustomer(String username, String password, String contact){
+    public boolean addCustomer(String username, String password, String contact) throws SQLException {
         return userRepository.addCustomer(username,password,contact);
     }
 
@@ -41,11 +40,7 @@ public class UserService {
         return userRepository.raiseChequeBookRequest(userId);
     }
 
-    public void approveChequeBookRequests(String userId){
-        userRepository.approveChequeBookRequests(userId);
-    }
-
-    public List<String> getUserIdForChequeBookRequests(){
-        return userRepository.getUserIdForChequeBookRequests();
+    public void approveChequeBookRequests(){
+        userRepository.approveChequeBookRequests();
     }
 }
