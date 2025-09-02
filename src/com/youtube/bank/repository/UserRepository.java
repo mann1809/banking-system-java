@@ -1,21 +1,17 @@
 package com.youtube.bank.repository;
 
-import com.youtube.bank.entity.Transaction;
 import com.youtube.bank.entity.User;
 import com.youtube.bank.utility.Database;
 
 import java.sql.*;
-import java.sql.Date;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.HashSet;
+import java.util.Scanner;
+import java.util.Set;
+
 
 public class UserRepository {
     private static Set<User> users= new HashSet<>();
-    List<Transaction> transactionHistory= new ArrayList<>();
-    Map<String,String> requests=new HashMap<>();
-
 
     static{
         User user1=new User("admin", "admin", "1230",  "admin", 0.0);
@@ -31,20 +27,9 @@ public class UserRepository {
         System.out.println(users);
     }
 
+    //checks login info of user
     public User login(String username, String password){
-//        List<User> finalList= users.stream().filter(user-> user.getUsername().equals(username) && user.getPassword().equals(password)).collect(Collectors.toList());
-//        if(!finalList.isEmpty()){
-//            return finalList.get(0);
-//        }else{
-//            return null;
-//        }
-
-        /*return users.stream()
-                .filter(user-> user.getUsername().equals(username) && user.getPassword().equals(password))
-                .findFirst()
-                .orElse(null);*/
         String sql="select * from users where username=? and password=?";
-        String role="";
         try(Connection conn=Database.getConnection();PreparedStatement pst=conn.prepareStatement(sql)){
             pst.setString(1,username);
             pst.setString(2,password);
@@ -58,8 +43,8 @@ public class UserRepository {
         return null;
     }
 
+    //To create new customer account
     public boolean addCustomer(String username, String password, String contact) throws SQLException {
-        //User user =new User(username,password,contact,"user",500.0);
         String sql= "INSERT INTO users (username,password,\"contactNumber\",\"role\",\"accountBalance\") " +
                 "VALUES (?, ?, ?, 'user', '500.0')";
         try(Connection conn= Database.getConnection();PreparedStatement pst=conn.prepareStatement(sql)){
@@ -73,19 +58,8 @@ public class UserRepository {
         }
     }
 
+    //To get account balance for given user
     public Double checkAccountBalance(String userId){
-//        List<User> result= users.stream().filter(user -> user.getUsername().equals(userId)).collect(Collectors.toList());
-//        if(!result.isEmpty()){
-//            return result.getFirst().getAccountBalance();
-//        }else{
-//            return null;
-//        }
-
-        /*return users.stream()
-                .filter(user -> user.getUsername().equals(userId))
-                .map(User::getAccountBalance)
-                .findFirst()
-                .orElse(0.0);*/
 
         String sql="select \"accountBalance\" from users where username = ?";
         try(Connection conn=Database.getConnection();PreparedStatement pst=conn.prepareStatement(sql)) {
@@ -102,6 +76,7 @@ public class UserRepository {
         return 0.0;
     }
 
+    //To transfer funds from one account to another
     public String transferFunds(User Payer,User Payee,Double amount) {
         double balance = checkAccountBalance(Payer.getUsername());
         if(amount>balance){
@@ -109,18 +84,16 @@ public class UserRepository {
             return null;
         }else{
             LocalDateTime date=LocalDateTime.now();
-            Double payeeBalance=Payee.getAccountBalance();
-            Double payerBalance=Payer.getAccountBalance();
-            /*Payee.setAccountBalance(payeeBalance+amount);
-            Payer.setAccountBalance(payerBalance-amount);*/
+            Double payeeFunds =Payee.getAccountBalance();
+            Double payerFunds=Payer.getAccountBalance();
 
-            Double payee= Payee.getAccountBalance()+amount;
-            Double payer= Payer.getAccountBalance()-amount;
+            Double payeeBalance= Payee.getAccountBalance()+amount;
+            Double payerBalance= Payer.getAccountBalance()-amount;
 
             String sql= "UPDATE users SET \"accountBalance\" =? where \"username\"=?";
 
             try(Connection conn=Database.getConnection();PreparedStatement pst=conn.prepareStatement(sql)){
-                pst.setDouble(1,payee);
+                pst.setDouble(1,payeeBalance);
                 pst.setString(2, Payee.getUsername());
                 pst.executeUpdate();
 
@@ -129,7 +102,7 @@ public class UserRepository {
             }
 
             try(Connection conn=Database.getConnection();PreparedStatement pst=conn.prepareStatement(sql)){
-                pst.setDouble(1,payer);
+                pst.setDouble(1,payerBalance);
                 pst.setString(2, Payer.getUsername());
                 pst.executeUpdate();
 
@@ -144,8 +117,8 @@ public class UserRepository {
                 pst.setTimestamp(1,Timestamp.valueOf(date));
                 pst.setDouble(2, amount);
                 pst.setString(3, Payee.getUsername());
-                pst.setDouble(4,payerBalance);
-                pst.setDouble(5,payer);
+                pst.setDouble(4,payerFunds);
+                pst.setDouble(5,payerBalance);
                 pst.setString(6,Payer.getUsername());
                 pst.executeUpdate();
 
@@ -160,8 +133,8 @@ public class UserRepository {
                 pst.setTimestamp(1,Timestamp.valueOf(date));
                 pst.setDouble(2, amount);
                 pst.setString(3, Payer.getUsername());
-                pst.setDouble(4,payeeBalance);
-                pst.setDouble(5,payee);
+                pst.setDouble(4,payeeFunds);
+                pst.setDouble(5,payeeBalance);
                 pst.setString(6,Payee.getUsername());
                 pst.executeUpdate();
 
@@ -169,22 +142,11 @@ public class UserRepository {
                 e.printStackTrace();
             }
             return "Funds Transferred Successfully";
-
-            /*Transaction transaction1 =new Transaction(date,amount,"transferred to ",Payee.getUsername(),payerBalance, Payer.getAccountBalance(), Payer.getUsername());
-            Transaction transaction2 =new Transaction(date,amount,"received from ",Payer.getUsername(), payeeBalance, Payee.getAccountBalance(), Payee.getUsername());
-            transactionHistory.add(transaction1);
-            transactionHistory.add(transaction2);*/
-
         }
-
     }
 
+    //To check if user account exists
     public User checkId(String payeeUserId)  {
-        /*return users.stream()
-                .filter(user-> user.getUsername().equals(payeeUserId))
-                .findFirst()
-                .orElse(null);*/
-
         String sql="select * from users where username=?";
         try(Connection conn=Database.getConnection();PreparedStatement pst=conn.prepareStatement(sql)){
             pst.setString(1,payeeUserId);
@@ -198,25 +160,10 @@ public class UserRepository {
         return null;
     }
 
-    /*public List<Transaction> transactionHistory(String userId){*/
+    //To get transaction history for given user
     public void transactionHistory(String userId){
-        //List<Transaction> result= transactionHistory.stream().filter(transaction -> transaction.getTransactionPerformedBy().equals(userId)).collect(Collectors.toList());
-        /*System.out.println("      Date \t\t        Amount \t Type \t Initial Balance \t Final Balance");
-        System.out.println("-------------------------------------------------------------------------");*/
-        // dd mm yyyy hh mm ss am
-        /*DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy hh:mm:ss a");
-        for(Transaction t: result){
-            System.out.println(t.getTransactionDate().format(formatter)
-                + "\t" + t.getTransactionAmount()
-                    + "\t" + (t.getTransactionType().equals("transferred to ")?"Debit":"Credit")
-                    + "\t\t" + t.getInitialBalance()
-                    + "\t       "
-                    + t.getFinalBalance()
-            );
-            System.out.println("-------------------------------------------------------------------------");
-        }*/
-        System.out.println(userId);
-        System.out.println("      Date \t\t  Amount \t Type \t User Type \t Initial Balance \t Final Balance\t Transaction Performed By");
+
+        System.out.println("  Date \t\t  Amount \t Type \t User Id \t Initial Balance \t Final Balance\t Transaction Performed By");
         System.out.println("-------------------------------------------------------------------------");
         String sql="select * from transaction where \"transactionPerformedBy\"=?";
         try(Connection conn=Database.getConnection();PreparedStatement pst=conn.prepareStatement(sql)){
@@ -237,11 +184,9 @@ public class UserRepository {
         }catch(SQLException e){
             e.printStackTrace();
         }
+    }
 
-        /*Collections.reverse(result);
-        return result;*/
-        }
-
+    //To raise request for Cheque Book
     public String raiseChequeBookRequest(String userId) {
         String sql = "select * from chequebookrequest where \"userId\"=?";
         try (Connection conn = Database.getConnection(); PreparedStatement pst = conn.prepareStatement(sql)) {
@@ -258,7 +203,7 @@ public class UserRepository {
             sql = "insert into chequebookrequest(\"userId\",\"requestStatus\") values(?,'Pending')";
             try(PreparedStatement pt=conn.prepareStatement(sql)) {
                 pt.setString(1, userId);
-                int r=pt.executeUpdate();
+                pt.executeUpdate();
                 return "Request Raised Successfully";
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -268,23 +213,11 @@ public class UserRepository {
         }
         return null;
     }
-        /*if(requests.containsKey(userId) && requests.get(userId).equals("Pending")){
-            return "Request Already Raised and Pending for Approval";
-        }else if(requests.containsKey(userId) && requests.get(userId).equals("Approved")){
-            return "Request is Approved";
-        }
-        else{
-            requests.put(userId,"Pending");
-            return "Request Raised Successfully";
-        }*/
 
 
-
+    //To Approve Pending Cheque Book Requests
     public void approveChequeBookRequests(){
-        /*if(requests.containsKey(userId)){
-            requests.put(userId,"Approved");
-            System.out.println("Request Approved Successfully!");
-        }*/
+        Scanner scanner= new Scanner(System.in);
         String sql="select * from \"chequebookrequest\" where \"requestStatus\" = 'Pending'";
         try(Connection conn= Database.getConnection();PreparedStatement pst=conn.prepareStatement(sql)){
             ResultSet result=pst.executeQuery();
@@ -292,11 +225,10 @@ public class UserRepository {
                 System.out.println(result.getString("userId"));
             }
             System.out.println("Please Select User Id from below:");
-            Scanner scanner= new Scanner(System.in);
-            String id = scanner.next();
+            String userId = scanner.next();
             sql="update chequebookrequest set \"requestStatus\" = 'Approved' where \"userId\" = ?";
             try(PreparedStatement pt=conn.prepareStatement(sql)){
-                pt.setString(1,id);
+                pt.setString(1,userId);
                 pt.executeUpdate();
                 System.out.println("Approved Successfully....");
             }catch (SQLException e){
@@ -307,24 +239,5 @@ public class UserRepository {
             e.printStackTrace();
         }
     }
-
-    public List<String> getUserIdForChequeBookRequests(){
-//        List<String> result=new ArrayList<>();
-//        for(Map.Entry<String,String> m : requests.entrySet()){
-//            if(m.getValue().equals("Pending")){
-//                result.add(m.getKey());
-//            }
-//        }
-
-        List<String> result = requests.entrySet()
-                .stream()
-                .filter(m -> m.getValue().equals("Pending"))
-                .map(m -> m.getKey())
-                .collect(Collectors.toList());
-
-        return result;
-    }
-
-
 }
 

@@ -1,11 +1,9 @@
 package com.youtube.bank.service;
 
-import com.youtube.bank.entity.Transaction;
 import com.youtube.bank.entity.User;
 import com.youtube.bank.repository.UserRepository;
 
 import java.sql.SQLException;
-import java.util.List;
 
 public class UserService {
     private UserRepository userRepository= new UserRepository();
@@ -44,9 +42,5 @@ public class UserService {
 
     public void approveChequeBookRequests(){
         userRepository.approveChequeBookRequests();
-    }
-
-    public List<String> getUserIdForChequeBookRequests(){
-        return userRepository.getUserIdForChequeBookRequests();
     }
 }

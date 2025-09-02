@@ -1,11 +1,9 @@
 package com.youtube.bank.main;
 
-import com.youtube.bank.entity.Transaction;
 import com.youtube.bank.entity.User;
 import com.youtube.bank.service.UserService;
 
-import java.sql.*;
-import java.util.List;
+import java.sql.SQLException;
 import java.util.Scanner;
 
 public class Main {
@@ -27,20 +25,23 @@ public class Main {
             }else if(user!= null && user.getRole().equals("user")){
                 main.initCustomer(user);
             }else{
-                System.out.println("Logged in failed");
+                System.out.println("Please enter correct username and password!");
             }
         }
     }
 
+    //Admin Functionality
     public void initAdmin() throws SQLException {
         String userId="";
         boolean flag = true;
         while(flag){
-            System.out.println("1. Exit/Logout");
-            System.out.println("2. Create a Customer Account");
-            System.out.println("3. Show Transaction History");
-            System.out.println("4. Check Bank Balance");
-            System.out.println("5. Approve Cheque Book Request");
+            System.out.print(
+                    "1. Exit/Logout\n" +
+                    "2. Create New Customer Account\n" +
+                    "3. Show Transaction History\n" +
+                    "4. Check Bank Balance\n" +
+                    "5. Approve Cheque Book Request\n"
+            );
 
             int selectedOption= scanner.nextInt();
 
@@ -61,13 +62,14 @@ public class Main {
                     System.out.println("Enter the user id you want to check bank balance for");
                     userId = scanner.next();
                     Double balance = main.checkAccountBalance(userId);
-                    System.out.println("Account Balance for "+ userId+ ": " + balance);
+                    if(balance!=null)
+                    {
+                        System.out.println("Account Balance for "+ userId+ ": " + balance);
+                    }else{
+                        System.out.println("Please enter correct username....");
+                    }
                     break;
                 case 5:
-                    /*List<String> result = main.getUserIdForChequeBookRequests();
-                    System.out.println("Please Select User Id from below:");
-                    System.out.println(result);
-                    String id = scanner.next();*/
                     main.approveChequeBookRequests();
                     break;
                 default:
@@ -77,16 +79,19 @@ public class Main {
 
     }
 
+
+    //User Functionality
     private void initCustomer(User user){
         boolean flag = true;
         System.out.println("You are successfully logged in as Customer....");
         while(flag){
-            System.out.println("1. Exit/Logout");
-            System.out.println("2. Check account balance");
-            System.out.println("3. Transfer Funds");
-            System.out.println("4. Show Transaction History");
-            System.out.println("5. Raise Cheque Book Request");
-
+            System.out.print(
+                    "1. Exit/Logout\n" +
+                            "2. Check account balance\n" +
+                            "3. Transfer Funds\n" +
+                            "4. Show Transaction History\n" +
+                            "5. Raise Cheque Book Request\n"
+            );
 
             try {
                 int selectedOption= scanner.nextInt();
@@ -113,7 +118,6 @@ public class Main {
                         break;
                     case 4:
                         main.transactionHistory(user.getUsername());
-                        //System.out.println(history);
                         break;
                     case 5:
                         result = main.raiseChequeBookRequest(user.getUsername());
@@ -153,8 +157,12 @@ public class Main {
     }
 
     private String transferFunds(User Payer){
-        System.out.println("Enter the payee UserId");
+        System.out.println("Enter the Payee UserId");
         String payeeUserId=scanner.next();
+        if(payeeUserId.equals(Payer.getUsername())){
+            System.out.println("Payer and Payee can't be same");
+            return null;
+        }
         //check if the payee id exists
         User Payee= main.checkId(payeeUserId);
 
@@ -162,17 +170,13 @@ public class Main {
             System.out.println("Payee doesn't exist");
             return null;
         }
-        else if(Payee.getUsername().equals(Payer.getUsername())){
-            System.out.println("Payer and Payee can't be same");
-            return null;
-        }
-
-
 
         System.out.println("Enter the amount you want to transfer");
         Double amount=scanner.nextDouble();
-        //Used checkaccountbalance method first to know if amount>balance
-        //you wrote that logic in user repository
+        if(amount<=0){
+            System.out.println("Please enter valid amount....");
+            return null;
+        }
         return userService.transferFunds(Payer,Payee,amount);
 
     }
@@ -191,10 +195,6 @@ public class Main {
 
     private void approveChequeBookRequests(){
         userService.approveChequeBookRequests();
-    }
-
-    private List<String> getUserIdForChequeBookRequests(){
-        return userService.getUserIdForChequeBookRequests();
     }
 }
 
