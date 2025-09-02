@@ -1,4 +1,4 @@
-package com.youtube.bank.utility;
+package com.bank.utility;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

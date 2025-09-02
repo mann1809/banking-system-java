@@ -1,7 +1,7 @@
 package com.bank.main;
 
-import com.youtube.bank.entity.User;
-import com.youtube.bank.service.UserService;
+import com.bank.entity.User;
+import com.bank.service.UserService;
 
 import java.sql.SQLException;
 import java.util.Scanner;

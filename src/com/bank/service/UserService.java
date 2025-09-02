@@ -1,7 +1,7 @@
-package com.youtube.bank.service;
+package com.bank.service;
 
-import com.youtube.bank.entity.User;
-import com.youtube.bank.repository.UserRepository;
+import com.bank.entity.User;
+import com.bank.repository.UserRepository;
 
 import java.sql.SQLException;
 

@@ -1,7 +1,7 @@
-package com.youtube.bank.repository;
+package com.bank.repository;
 
-import com.youtube.bank.entity.User;
-import com.youtube.bank.utility.Database;
+import com.bank.entity.User;
+import com.bank.utility.Database;
 
 import java.sql.*;
 import java.time.LocalDateTime;

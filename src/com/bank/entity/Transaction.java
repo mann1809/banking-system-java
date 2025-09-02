@@ -1,4 +1,4 @@
-package com.youtube.bank.entity;
+package com.bank.entity;
 
 import java.time.LocalDateTime;
 
